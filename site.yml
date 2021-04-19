@@ -1,0 +1,67 @@
+---
+
+- hosts: localhost
+  become: true
+  gather_facts: true
+  tasks:
+    - name: sudoers
+      lineinfile:
+        path: /etc/sudoers
+        line: "rob ALL=(ALL) NOPASSWD: ALL"
+    - name: install packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - iptables-persistent
+        - vim 
+        - iptraf-ng
+        - pwgen
+        - curl
+        - net-tools
+        - tshark
+        - wireshark
+        - wget
+        - whois
+        - docker.io
+        - geany
+        - terminator
+    - name: Copy vimrc
+      copy:
+        src: "{{ playbook_dir }}/vimrc"
+        dest: /home/rob/.vimrc
+        owner: rob
+        group: rob
+        mode: '0644'
+    - name: Add rob to docker group
+      user:
+        name: rob
+        groups: docker
+        append: yes
+    - name: snap vscode
+      snap:
+        name: code
+        classic: yes
+    - name: snap lxd
+      snap:
+        name: lxd
+        classic: yes
+    - name: Configure iptables input
+      iptables:
+        chain: INPUT
+        ctstate: ESTABLISHED,RELATED
+        jump: ACCEPT
+      become: yes
+    - name: Configure iptables localhost
+      iptables:
+        chain: INPUT
+        jump: ACCEPT
+        in_interface: lo
+      become: yes
+    - name: Configure INPUT policy
+      iptables:
+        chain: INPUT
+        policy: DROP
+      become: yes
+    - name: Save iptables with docker rules
+      shell: "systemctl restart docker && iptables-save > /etc/iptables/rules.v4"
