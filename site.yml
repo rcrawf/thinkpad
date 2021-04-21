@@ -16,6 +16,8 @@
         - iptables-persistent
         - vim 
         - iptraf-ng
+        - gimp
+        - docker-compose
         - pwgen
         - curl
         - net-tools
@@ -38,6 +40,10 @@
         name: rob
         groups: docker
         append: yes
+    - name: snap slack
+      snap:
+        name: slack
+        classic: yes
     - name: snap vscode
       snap:
         name: code
